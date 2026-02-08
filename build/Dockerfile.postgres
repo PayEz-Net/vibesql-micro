@@ -1,0 +1,80 @@
+# Multi-stage build for minimal PostgreSQL binary
+# Target: ≤15MB stripped PostgreSQL with JSONB support
+
+FROM debian:bookworm-slim as builder
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    wget \
+    bison \
+    flex \
+    perl \
+    python3 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Download PostgreSQL 16.x source
+ARG PG_VERSION=16.1
+WORKDIR /build
+RUN wget -q https://ftp.postgresql.org/pub/source/v${PG_VERSION}/postgresql-${PG_VERSION}.tar.gz && \
+    tar -xzf postgresql-${PG_VERSION}.tar.gz && \
+    rm postgresql-${PG_VERSION}.tar.gz
+
+WORKDIR /build/postgresql-${PG_VERSION}
+
+# Configure minimal PostgreSQL build
+# Remove unnecessary features to minimize binary size
+RUN ./configure \
+    --prefix=/usr/local/pgsql \
+    --without-readline \
+    --without-zlib \
+    --without-openssl \
+    --without-ldap \
+    --without-pam \
+    --without-gssapi \
+    --without-icu \
+    --disable-rpath \
+    --disable-debug \
+    --disable-profiling \
+    --disable-cassert \
+    --disable-dtrace \
+    --without-perl \
+    --without-python \
+    --without-tcl \
+    --with-system-tzdata=/usr/share/zoneinfo
+
+# Build only required components
+# Focus: Core engine + JSONB support + plpgsql
+RUN make -j$(nproc) world-bin
+
+# Install to /usr/local/pgsql
+RUN make install
+
+# Strip debug symbols from all binaries
+RUN find /usr/local/pgsql/bin -type f -exec strip --strip-all {} \; 2>/dev/null || true
+RUN find /usr/local/pgsql/lib -type f -name "*.so" -exec strip --strip-all {} \; 2>/dev/null || true
+
+# Final minimal image with only the postgres binary
+FROM scratch as postgres-micro
+
+# Copy only essential binaries
+COPY --from=builder /usr/local/pgsql/bin/postgres /postgres
+COPY --from=builder /usr/local/pgsql/lib /lib
+
+# Copy shared libraries required for postgres
+COPY --from=builder /lib/x86_64-linux-gnu/libc.so.6 /lib/x86_64-linux-gnu/
+COPY --from=builder /lib/x86_64-linux-gnu/libpthread.so.0 /lib/x86_64-linux-gnu/
+COPY --from=builder /lib/x86_64-linux-gnu/libm.so.6 /lib/x86_64-linux-gnu/
+COPY --from=builder /lib/x86_64-linux-gnu/librt.so.1 /lib/x86_64-linux-gnu/
+COPY --from=builder /lib/x86_64-linux-gnu/libdl.so.2 /lib/x86_64-linux-gnu/
+COPY --from=builder /lib64/ld-linux-x86-64.so.2 /lib64/
+
+# Build instructions:
+# docker build -f build/Dockerfile.postgres -t vibesql-postgres:micro .
+# docker create --name temp vibesql-postgres:micro
+# docker cp temp:/postgres build/postgres_micro
+# docker rm temp
+
+# Verification:
+# ls -lh build/postgres_micro
+# Target: ≤15MB after stripping

@@ -1,0 +1,36 @@
+{
+  "name": "vibesql-micro",
+  "version": "1.0.0",
+  "description": "SQLite + JSON + HTTP API in one command. Zero config local database for developers.",
+  "main": "index.js",
+  "bin": {
+    "vibesql-micro": "./bin/vibesql-micro.js",
+    "vibe": "./bin/vibesql-micro.js"
+  },
+  "scripts": {
+    "postinstall": "node scripts/install.js"
+  },
+  "keywords": [
+    "database",
+    "sql",
+    "sqlite",
+    "postgresql",
+    "jsonb",
+    "http-api",
+    "developer-tools",
+    "zero-config"
+  ],
+  "author": "PayEz <opensource@payez.net>",
+  "license": "Apache-2.0",
+  "homepage": "https://vibesql.online",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PayEz-Net/vibesql-micro.git"
+  },
+  "bugs": {
+    "url": "https://github.com/PayEz-Net/vibesql-micro/issues"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
