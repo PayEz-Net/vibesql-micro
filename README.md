@@ -1,17 +1,18 @@
 # vibesql-micro
 
-SQLite + JSON + HTTP API in one command.
+PostgreSQL + JSONB + HTTP API in one command.
 
 ---
 
 ## What is this?
 
-`vibesql-micro` is a lightweight database server for local development.
+`vibesql-micro` is a lightweight database server for local development with **embedded PostgreSQL 16.1**.
 
-- **SQLite-based** — Fast, embedded, zero config
-- **JSON support** — Flexible schema, JSONB-style queries
+- **PostgreSQL-based** — Full PostgreSQL 16.1 embedded in a single binary
+- **Native JSONB** — Real PostgreSQL JSONB support, not an extension
 - **HTTP API** — Query via curl, Postman, or any HTTP client
 - **Single command** — `npx vibesql-micro` and you're running
+- **Zero config** — No installation, no setup, no Docker
 
 Perfect for prototyping, testing, and local development.
 
@@ -112,30 +113,34 @@ Check server status.
 ```json
 {
   "status": "healthy",
-  "version": "0.1.0",
-  "database": "sqlite",
+  "version": "1.0.0",
+  "database": "postgresql-16.1",
   "uptime_seconds": 3600
 }
 ```
 
 ---
 
-## JSON Queries
+## JSONB Queries
 
-VibeSQL supports JSON1 extension for flexible schema:
+VibeSQL has **native PostgreSQL JSONB support** — not an extension, the real thing:
 
 ```sql
--- Store JSON
-INSERT INTO users (data) VALUES ('{"name": "Alice", "tags": ["developer", "golang"]}');
+-- Store JSONB
+INSERT INTO users (data) VALUES ('{"name": "Alice", "tags": ["developer", "golang"]}'::jsonb);
 
--- Query JSON fields
+-- Query JSONB fields
 SELECT data->>'name' as name FROM users;
 
--- Filter by JSON
+-- Filter by JSONB
 SELECT * FROM users WHERE data->>'active' = 'true';
 
--- Array operations
-SELECT * FROM users WHERE json_array_length(data->'tags') > 1;
+-- Array operations (native PostgreSQL)
+SELECT * FROM users WHERE jsonb_array_length(data->'tags') > 1;
+
+-- JSONB operators (PostgreSQL)
+SELECT * FROM users WHERE data @> '{"active": true}'::jsonb;
+SELECT * FROM users WHERE data ? 'email';
 ```
 
 ---
@@ -150,7 +155,7 @@ npx vibesql-micro
 
 # Create table and insert data
 curl -X POST http://localhost:5173/v1/query \
-  -d '{"sql": "CREATE TABLE todos (id INTEGER PRIMARY KEY, title TEXT, done INTEGER)"}'
+  -d '{"sql": "CREATE TABLE todos (id SERIAL PRIMARY KEY, title TEXT, done BOOLEAN DEFAULT false)"}'
 
 curl -X POST http://localhost:5173/v1/query \
   -d '{"sql": "INSERT INTO todos (title, done) VALUES ('\''Buy milk'\'', 0)"}'
@@ -194,7 +199,7 @@ npm run dev
 
 ## Admin UI
 
-Want a visual interface? Use [vibesql-admin](https://github.com/vibesql/vibesql-admin):
+Want a visual interface? Use [vibesql-admin](https://github.com/PayEz-Net/vibesql-admin):
 
 ```bash
 # Terminal 1: Database
@@ -209,22 +214,23 @@ npx vibesql-admin
 
 ## Comparison
 
-| Feature | VibeSQL Micro | SQLite CLI | PostgreSQL |
-|---------|---------------|------------|------------|
-| Installation | `npx` command | Download binary | Homebrew/apt/installer |
-| HTTP API | ✅ Built-in | ❌ No | ❌ No (need PostgREST) |
-| JSON support | ✅ JSON1 | ✅ JSON1 | ✅ JSONB (more powerful) |
-| Setup time | < 10 seconds | ~1 minute | ~5 minutes |
-| Use case | Local dev, prototyping | Embedded apps | Production |
+| Feature | VibeSQL Micro | PostgreSQL | SQLite |
+|---------|---------------|------------|--------|
+| Installation | `npx` command | Homebrew/apt/installer | Download binary |
+| HTTP API | ✅ Built-in | ❌ Need PostgREST | ❌ No |
+| JSONB support | ✅ Native PostgreSQL | ✅ Native | ❌ JSON1 extension only |
+| Setup time | < 10 seconds | ~5 minutes | ~1 minute |
+| PostgreSQL compatibility | ✅ 100% (it IS PostgreSQL) | ✅ Native | ❌ Different SQL dialect |
+| Use case | Local dev, prototyping | Production | Embedded apps |
 
 ---
 
 ## Limitations
 
-- **Not for production** — Use PostgreSQL, MySQL, or managed services for production
-- **SQLite-based** — Subject to SQLite limitations (no parallel writes)
-- **JSON1 extension** — Less powerful than PostgreSQL's JSONB
-- **Single file database** — Not suitable for high-concurrency workloads
+- **Not for production** — Use managed PostgreSQL for production workloads
+- **Embedded PostgreSQL** — Single instance, no replication or clustering
+- **Local only** — Designed for localhost development, not remote connections
+- **Basic HTTP API** — For advanced features, use VibeSQL Cloud
 
 For production features (replication, backups, auth, scaling), see [VibeSQL Cloud](https://vibesql.online/cloud).
 
@@ -235,7 +241,7 @@ For production features (replication, backups, auth, scaling), see [VibeSQL Clou
 Clone the repo:
 
 ```bash
-git clone https://github.com/vibesql/vibesql-micro.git
+git clone https://github.com/PayEz-Net/vibesql-micro.git
 cd vibesql-micro
 ```
 
@@ -262,9 +268,10 @@ go test ./...
 ## Tech Stack
 
 - **Language:** Go
-- **Database:** SQLite + JSON1 extension
+- **Database:** Embedded PostgreSQL 16.1 (full PostgreSQL, not a fork)
 - **HTTP:** Standard library (`net/http`)
 - **Packaging:** npm (via npx)
+- **Binary size:** ~68MB (includes PostgreSQL binaries)
 
 ---
 
@@ -276,14 +283,14 @@ Contributions welcome. Open an issue or pull request.
 
 ## License
 
-MIT License. See [LICENSE](LICENSE).
+Apache 2.0 License. See [LICENSE](LICENSE).
 
 ---
 
 ## Links
 
 - **Website:** [vibesql.online](https://vibesql.online)
-- **Admin UI:** [github.com/vibesql/vibesql-admin](https://github.com/vibesql/vibesql-admin)
+- **Admin UI:** [github.com/PayEz-Net/vibesql-admin](https://github.com/PayEz-Net/vibesql-admin)
 - **Docs:** [vibesql.online/docs](https://vibesql.online/docs)
 - **Discord:** [discord.gg/vibesql](https://discord.gg/vibesql)
 
