@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VibeSQL — PostgreSQL for AI Agents | Open Source</title>
+    <meta name="description" content="One binary. Zero dependencies. Production-ready PostgreSQL for agent systems. Self-host free or use our managed cloud.">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/vibesql-icon.svg">
+    <link rel="manifest" href="/site.webmanifest">
+    <meta name="theme-color" content="#336791">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #7c3aed;
+            --dark: #0f172a;
+            --gray: #64748b;
+            --light: #f8fafc;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--dark);
+            background: white;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Header */
+        header {
+            border-bottom: 1px solid var(--border);
+            padding: 16px 0;
+            position: sticky;
+            top: 0;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            z-index: 100;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--dark);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo svg {
+            width: 28px;
+            height: 28px;
+        }
+
+        .logo span {
+            color: var(--primary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 32px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: var(--gray);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: var(--dark);
+        }
+
+        .github-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--dark);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        /* Hero */
+        .hero {
+            padding: 80px 0;
+            text-align: center;
+            background: linear-gradient(180deg, white 0%, var(--light) 100%);
+        }
+
+        .badges {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .badge-open {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-license {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-windows {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        h1 {
+            font-size: 64px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            letter-spacing: -0.02em;
+        }
+
+        .tagline {
+            font-size: 24px;
+            color: var(--gray);
+            margin-bottom: 32px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-group {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--dark);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--light);
+        }
+
+        .sub-text {
+            color: var(--gray);
+            font-size: 14px;
+        }
+
+        /* Code Preview */
+        .code-section {
+            padding: 40px 0;
+            background: var(--light);
+        }
+
+        .code-block {
+            background: var(--dark);
+            color: #e2e8f0;
+            padding: 24px;
+            border-radius: 12px;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .code-block .comment {
+            color: #64748b;
+        }
+
+        .code-block .prompt {
+            color: #22c55e;
+        }
+
+        /* Features */
+        .features {
+            padding: 80px 0;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 64px;
+        }
+
+        .section-header h2 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .section-header p {
+            color: var(--gray);
+            font-size: 18px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 32px;
+        }
+
+        .feature-card {
+            padding: 32px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            transition: box-shadow 0.2s;
+        }
+
+        .feature-card:hover {
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            margin-bottom: 16px;
+        }
+
+        .feature-card h3 {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        .feature-card p {
+            color: var(--gray);
+        }
+
+        /* Schemas Section */
+        .schemas {
+            padding: 80px 0;
+            background: var(--light);
+        }
+
+        .schema-grid {
+            display: grid;
+            gap: 24px;
+        }
+
+        .schema-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .schema-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .schema-header h3 {
+            font-size: 18px;
+        }
+
+        .schema-header .tables {
+            color: var(--gray);
+            font-size: 14px;
+        }
+
+        .schema-body {
+            padding: 24px;
+            display: none;
+        }
+
+        .schema-body.active {
+            display: block;
+        }
+
+        .schema-body pre {
+            background: var(--dark);
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 13px;
+        }
+
+        .copy-btn {
+            float: right;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* Pricing */
+        .pricing {
+            padding: 80px 0;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .pricing-card {
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 32px;
+            position: relative;
+        }
+
+        .pricing-card.featured {
+            border-color: var(--primary);
+            box-shadow: 0 4px 20px rgba(37, 99, 235, 0.1);
+        }
+
+        .pricing-card h3 {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        .pricing-card .price {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .pricing-card .price span {
+            font-size: 16px;
+            color: var(--gray);
+            font-weight: 400;
+        }
+
+        .pricing-card .description {
+            color: var(--gray);
+            margin-bottom: 24px;
+        }
+
+        .pricing-card ul {
+            list-style: none;
+            margin-bottom: 24px;
+        }
+
+        .pricing-card li {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pricing-card li::before {
+            content: "✓";
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        .pricing-card .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .soon-badge {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: var(--light);
+            color: var(--gray);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* Footer */
+        footer {
+            padding: 40px 0;
+            border-top: 1px solid var(--border);
+            color: var(--gray);
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        footer .links {
+            display: flex;
+            gap: 24px;
+        }
+
+        footer a {
+            color: var(--gray);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            color: var(--dark);
+        }
+
+        .powered-by {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--gray);
+        }
+
+        .powered-by svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .powered-by a {
+            color: #7c3aed;
+            font-weight: 500;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 40px;
+            }
+
+            .tagline {
+                font-size: 18px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <a href="/" class="logo">
+                    <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+                        <g transform="translate(16, 16)">
+                            <ellipse cx="0" cy="-8" rx="10" ry="3.5" fill="#336791"/>
+                            <rect x="-10" y="-8" width="20" height="12" fill="#336791"/>
+                            <ellipse cx="0" cy="4" rx="10" ry="3.5" fill="#336791"/>
+                            <line x1="-10" y1="-2" x2="10" y2="-2" stroke="#2563EB" stroke-width="1" opacity="0.5"/>
+                            <line x1="-10" y1="2" x2="10" y2="2" stroke="#2563EB" stroke-width="1" opacity="0.5"/>
+                        </g>
+                    </svg>
+                    Vibe<span>SQL</span>
+                </a>
+                <div class="nav-links">
+                    <a href="#features">Features</a>
+                    <a href="#schemas">Schemas</a>
+                    <a href="#pricing">Pricing</a>
+                    <a href="https://github.com/PayEz-Net/vibesql-micro" class="github-btn">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                        GitHub
+                    </a>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <div class="badges">
+                <span class="badge badge-open">🚀 Open Source</span>
+                <span class="badge badge-windows">🪟 Windows Ready</span>
+                <span class="badge badge-license">📋 Apache 2.0</span>
+            </div>
+
+            <h1>PostgreSQL for AI Agents</h1>
+            <p class="tagline">Embedded PostgreSQL 16.1. Zero dependencies. Production-ready for edge computing.</p>
+
+            <div class="cta-group">
+                <a href="https://github.com/PayEz-Net/vibesql-micro/releases/tag/v1.0.0-windows-preview" class="btn btn-primary">
+                    ⬇️ Download Windows (77MB)
+                </a>
+                <a href="https://github.com/PayEz-Net/vibesql-micro" class="btn btn-secondary">
+                    View on GitHub
+                </a>
+            </div>
+
+            <p class="sub-text">Self-host free forever, or use our managed cloud (coming soon).</p>
+        </div>
+    </section>
+
+    <section class="code-section">
+        <div class="container">
+            <div class="code-block">
+<span class="comment"># Start the server (Windows)</span><br>
+<span class="prompt">$</span> .\vibesql-micro-windows-x64.exe<br>
+<span class="comment"># → Running at http://localhost:5173</span><br><br>
+<span class="comment"># Query from your agent</span><br>
+<span class="prompt">$</span> curl -X POST http://localhost:5173/v1/query \<br>
+  -H "Content-Type: application/json" \<br>
+  -d '{"sql": "SELECT * FROM agent_state WHERE id = 123"}'
+            </div>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-header">
+                <h2>Built for Agent Systems</h2>
+                <p>Everything you need to persist state, communicate between agents, and scale your AI infrastructure.</p>
+            </div>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📦</div>
+                    <h3>Embedded PostgreSQL</h3>
+                    <p>Full PostgreSQL 16.1 in a single 77MB binary. No Docker, no installation, no config.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Zero Config</h3>
+                    <p>Download and run. Auto-creates directories, starts PostgreSQL, serves HTTP API on port 5173.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Safety Built-In</h3>
+                    <p>UPDATE/DELETE require WHERE clause. Query timeouts. Row limits. Built-in validation.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">📡</div>
+                    <h3>Native JSONB</h3>
+                    <p>Real PostgreSQL JSONB support. Store agent state, messages, and metadata flexibly.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">☁️</div>
+                    <h3>Edge Ready</h3>
+                    <p>Perfect for AI devices, IoT sensors, edge computing. Local-first with optional cloud sync.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">🔧</div>
+                    <h3>Production Tested</h3>
+                    <p>Comprehensive test suite. Battle-tested for edge computing and agent systems.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="schemas" id="schemas">
+        <div class="container">
+            <div class="section-header">
+                <h2>Example Schemas</h2>
+                <p>Production-tested database designs for AI agent systems.</p>
+            </div>
+
+            <div class="schema-grid">
+                <div class="schema-card">
+                    <div class="schema-header" onclick="toggleSchema(this)">
+                        <div>
+                            <h3>🤖 Agent Collaboration Platform</h3>
+                            <span class="tables">5 tables • Multi-agent orchestration</span>
+                        </div>
+                        <span>▼</span>
+                    </div>
+                    <div class="schema-body">
+                        <button class="copy-btn" onclick="copySchema(this)">Copy DDL</button>
+                        <pre>-- Agents table
+CREATE TABLE agents (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  capabilities JSONB,
+  status TEXT DEFAULT 'idle',
+  last_seen TIMESTAMP
+);
+
+-- Conversations table
+CREATE TABLE conversations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  agent_ids UUID[],
+  context JSONB,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Messages table
+CREATE TABLE messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  conversation_id UUID REFERENCES conversations(id),
+  agent_id UUID REFERENCES agents(id),
+  content TEXT,
+  metadata JSONB,
+  created_at TIMESTAMP DEFAULT NOW()
+);</pre>
+                    </div>
+                </div>
+
+                <div class="schema-card">
+                    <div class="schema-header" onclick="toggleSchema(this)">
+                        <div>
+                            <h3>✉️ Agent Mail System</h3>
+                            <span class="tables">2 tables • Async messaging</span>
+                        </div>
+                        <span>▼</span>
+                    </div>
+                    <div class="schema-body">
+                        <button class="copy-btn" onclick="copySchema(this)">Copy DDL</button>
+                        <pre>-- Mail queue table
+CREATE TABLE mail_queue (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  from_agent UUID,
+  to_agent UUID,
+  subject TEXT,
+  body JSONB,
+  priority INTEGER DEFAULT 0,
+  status TEXT DEFAULT 'pending',
+  created_at TIMESTAMP DEFAULT NOW(),
+  delivered_at TIMESTAMP
+);
+
+-- Mail templates table
+CREATE TABLE mail_templates (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT UNIQUE,
+  template JSONB,
+  variables TEXT[]
+);</pre>
+                    </div>
+                </div>
+
+                <div class="schema-card">
+                    <div class="schema-header" onclick="toggleSchema(this)">
+                        <div>
+                            <h3>🔐 Page RBAC</h3>
+                            <span class="tables">4 tables • Access control</span>
+                        </div>
+                        <span>▼</span>
+                    </div>
+                    <div class="schema-body">
+                        <button class="copy-btn" onclick="copySchema(this)">Copy DDL</button>
+                        <pre>-- Users table
+CREATE TABLE users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  email TEXT UNIQUE,
+  role TEXT DEFAULT 'viewer',
+  permissions JSONB
+);
+
+-- Pages table
+CREATE TABLE pages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  path TEXT UNIQUE,
+  owner_id UUID REFERENCES users(id),
+  settings JSONB
+);
+
+-- Page access table
+CREATE TABLE page_access (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  page_id UUID REFERENCES pages(id),
+  user_id UUID REFERENCES users(id),
+  access_level TEXT
+);
+
+-- Access logs table
+CREATE TABLE access_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  page_id UUID REFERENCES pages(id),
+  user_id UUID REFERENCES users(id),
+  action TEXT,
+  timestamp TIMESTAMP DEFAULT NOW()
+);</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="pricing" id="pricing">
+        <div class="container">
+            <div class="section-header">
+                <h2>Simple Pricing</h2>
+                <p>Start free, scale when you need to.</p>
+            </div>
+
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <h3>VibeSQL Micro</h3>
+                    <div class="price">$0<span>/forever</span></div>
+                    <p class="description">Local development. Self-hosted.</p>
+
+                    <ul>
+                        <li>Embedded PostgreSQL 16.1</li>
+                        <li>Windows (macOS/Linux soon)</li>
+                        <li>All core features</li>
+                        <li>Unlimited local databases</li>
+                        <li>Community support</li>
+                    </ul>
+
+                    <a href="https://github.com/PayEz-Net/vibesql-micro/releases" class="btn btn-secondary">Download Now</a>
+                </div>
+
+                <div class="pricing-card featured">
+                    <span class="soon-badge">Coming Soon</span>
+                    <h3>VibeSQL Cloud</h3>
+                    <div class="price">$29<span>/month</span></div>
+                    <p class="description">Managed hosting for production.</p>
+
+                    <ul>
+                        <li>10 managed databases</li>
+                        <li>100GB storage</li>
+                        <li>Automatic daily backups</li>
+                        <li>Custom domains + SSL</li>
+                        <li>Email support</li>
+                    </ul>
+
+                    <a href="#" class="btn btn-primary">Join Waitlist</a>
+                </div>
+
+                <div class="pricing-card">
+                    <span class="soon-badge">Coming Soon</span>
+                    <h3>Enterprise</h3>
+                    <div class="price">Custom<span></span></div>
+                    <p class="description">Multi-tenant. Dedicated infrastructure.</p>
+
+                    <ul>
+                        <li>Unlimited databases</li>
+                        <li>Custom storage</li>
+                        <li>KV/secret managed auth</li>
+                        <li>Multi-tenant isolation</li>
+                        <li>99.99% SLA</li>
+                        <li>Priority support</li>
+                    </ul>
+
+                    <a href="mailto:hello@vibesql.online" class="btn btn-secondary">Contact Sales</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="links">
+                    <a href="https://github.com/PayEz-Net/vibesql-micro">GitHub</a>
+                    <a href="https://github.com/PayEz-Net/vibesql-micro#readme">Docs</a>
+                    <a href="https://github.com/PayEz-Net/vibesql-server">VibeSQL Server</a>
+                    <span>Apache 2.0</span>
+                </div>
+
+                <div class="powered-by">
+                    <svg viewBox="0 0 74 74" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <linearGradient id="vibeGradient2" x1="0" y1="0" x2="1" y2="0">
+                                <stop offset="0%" stop-color="#7c3aed"/>
+                                <stop offset="100%" stop-color="#06b6d4"/>
+                            </linearGradient>
+                        </defs>
+                        <g transform="translate(37, 37)">
+                            <circle cx="0" cy="0" r="12" fill="url(#vibeGradient2)"/>
+                            <ellipse cx="0" cy="0" rx="35" ry="12" stroke="url(#vibeGradient2)" stroke-width="3" transform="rotate(-30)" fill="none" opacity="0.8"/>
+                            <circle cx="35" cy="0" r="5" fill="#06b6d4" transform="rotate(-30)"/>
+                            <ellipse cx="0" cy="0" rx="35" ry="12" stroke="url(#vibeGradient2)" stroke-width="3" transform="rotate(30)" fill="none" opacity="0.8"/>
+                            <circle cx="-35" cy="0" r="5" fill="#7c3aed" transform="rotate(30)"/>
+                        </g>
+                    </svg>
+                    <span>Powered by <a href="https://idealvibe.online">IdealVibe</a></span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function toggleSchema(header) {
+            const body = header.nextElementSibling;
+            body.classList.toggle('active');
+            const arrow = header.querySelector('span:last-child');
+            arrow.textContent = body.classList.contains('active') ? '▲' : '▼';
+        }
+
+        function copySchema(btn) {
+            const pre = btn.nextElementSibling;
+            navigator.clipboard.writeText(pre.textContent);
+            btn.textContent = 'Copied!';
+            setTimeout(() => btn.textContent = 'Copy DDL', 2000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="60" viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg">
+  <!-- VibeSQL Logo - PostgreSQL-inspired minimal wordmark with database icon -->
+  <defs>
+    <style>
+      .wordmark { fill: #336791; font-family: 'Inter', -apple-system, sans-serif; font-weight: 700; font-size: 32px; }
+      .icon-primary { fill: #336791; }
+      .icon-accent { fill: #2563EB; opacity: 0.6; }
+    </style>
+  </defs>
+
+  <!-- Database icon (simple cylinder) -->
+  <g transform="translate(8, 18)">
+    <!-- Top ellipse -->
+    <ellipse cx="16" cy="6" rx="14" ry="5" class="icon-primary"/>
+    <!-- Body -->
+    <rect x="2" y="6" width="28" height="16" class="icon-primary"/>
+    <!-- Bottom ellipse -->
+    <ellipse cx="16" cy="22" rx="14" ry="5" class="icon-primary"/>
+    <!-- Highlight line -->
+    <ellipse cx="16" cy="6" rx="14" ry="5" fill="none" stroke="#2563EB" stroke-width="1.5" opacity="0.4"/>
+  </g>
+
+  <!-- Wordmark "vibesql" -->
+  <text x="48" y="42" class="wordmark">vibesql</text>
+</svg>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64" height="64" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+  <!-- Minimal VibeSQL icon - Simple database cylinder -->
+  <defs>
+    <style>
+      .db-primary { fill: #336791; }
+      .db-highlight { fill: none; stroke: #2563EB; stroke-width: 2; opacity: 0.5; }
+    </style>
+  </defs>
+
+  <g transform="translate(32, 32)">
+    <!-- Top ellipse -->
+    <ellipse cx="0" cy="-16" rx="20" ry="7" class="db-primary"/>
+
+    <!-- Body -->
+    <rect x="-20" y="-16" width="40" height="24" class="db-primary"/>
+
+    <!-- Bottom ellipse -->
+    <ellipse cx="0" cy="8" rx="20" ry="7" class="db-primary"/>
+
+    <!-- Middle line (data rows visual) -->
+    <line x1="-20" y1="-4" x2="20" y2="-4" class="db-highlight"/>
+    <line x1="-20" y1="4" x2="20" y2="4" class="db-highlight"/>
+
+    <!-- Top highlight -->
+    <ellipse cx="0" cy="-16" rx="20" ry="7" class="db-highlight"/>
+  </g>
+</svg>

@@ -1,0 +1,17 @@
+{
+  "name": "VibeSQL",
+  "short_name": "VibeSQL",
+  "description": "PostgreSQL for AI Agents. Embedded PostgreSQL 16.1 for edge computing.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#336791",
+  "icons": [
+    {
+      "src": "/vibesql-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

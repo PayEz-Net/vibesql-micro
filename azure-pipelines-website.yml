@@ -1,0 +1,24 @@
+# VibeSQL Website Deployment Pipeline
+# Deploys website/ folder to Azure Static Web Apps
+
+trigger:
+  branches:
+    include:
+      - vibe-sql-micro-server-be11
+  paths:
+    include:
+      - website/*
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  - group: vibesql-website-vars
+
+steps:
+- task: AzureStaticWebApp@0
+  inputs:
+    app_location: '/website'
+    output_location: ''
+    azure_static_web_apps_api_token: $(deployment_token)
+  displayName: 'Deploy VibeSQL Website to Azure Static Web Apps'
