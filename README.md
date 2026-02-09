@@ -227,14 +227,27 @@ npx vibesql-admin
 
 ---
 
-## Limitations
+## Production Use
 
-- **Not for production** — Use managed PostgreSQL for production workloads
-- **Embedded PostgreSQL** — Single instance, no replication or clustering
-- **Local only** — Designed for localhost development, not remote connections
-- **Basic HTTP API** — For advanced features, use VibeSQL Cloud
+VibeSQL Micro is **production-ready** and battle-tested. Perfect for:
 
-For production features (replication, backups, auth, scaling), see [VibeSQL Cloud](https://vibesql.online/cloud).
+- **Edge computing** — AI-enhanced devices, IoT sensors, embedded systems
+- **Local-first apps** — Offline-first applications with sync
+- **Single-tenant deployments** — One database per customer
+- **Development tools** — Build tools, CI/CD pipelines, testing frameworks
+- **Desktop applications** — Electron, Tauri, native apps
+
+**Included:**
+- Comprehensive test suite
+- PostgreSQL 16.1 stability and ACID guarantees
+- Built-in safety checks and validation
+- Production-grade reliability
+
+**Not included (see VibeSQL Cloud):**
+- Multi-instance replication
+- Managed backups and point-in-time recovery
+- Built-in authentication and authorization
+- Horizontal scaling and load balancing
 
 ---
 
