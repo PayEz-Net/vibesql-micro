@@ -214,14 +214,16 @@ npx vibesql-admin
 
 ## Comparison
 
-| Feature | VibeSQL Micro | PostgreSQL | SQLite |
-|---------|---------------|------------|--------|
-| Installation | `npx` command | Homebrew/apt/installer | Download binary |
-| HTTP API | ✅ Built-in | ❌ Need PostgREST | ❌ No |
-| JSONB support | ✅ Native PostgreSQL | ✅ Native | ❌ JSON1 extension only |
-| Setup time | < 10 seconds | ~5 minutes | ~1 minute |
-| PostgreSQL compatibility | ✅ 100% (it IS PostgreSQL) | ✅ Native | ❌ Different SQL dialect |
-| Use case | Local dev, prototyping | Production | Embedded apps |
+| Feature | VibeSQL Micro | Supabase | Railway/Neon | PlanetScale |
+|---------|---------------|----------|--------------|-------------|
+| Installation | `npx` command | Sign up + API keys | Sign up + deploy | Sign up + configure |
+| Setup time | < 10 seconds | ~5 minutes | ~3 minutes | ~5 minutes |
+| Local dev | ✅ Localhost only | ❌ Cloud sandbox only | ❌ Cloud only | ❌ Cloud only |
+| Cost | ✅ Free (localhost) | Free tier + paid | Free tier + paid | Free tier + paid |
+| PostgreSQL | ✅ Native PostgreSQL 16.1 | ✅ PostgreSQL | ✅ PostgreSQL | ❌ MySQL-compatible |
+| JSONB | ✅ Full support | ✅ Full support | ✅ Full support | ❌ JSON only |
+| Auth built-in | ❌ No | ✅ Yes | ❌ No | ❌ No |
+| Use case | Local dev, prototyping | Production apps | Production apps | Production apps |
 
 ---
 
