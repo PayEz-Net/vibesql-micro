@@ -312,3 +312,9 @@ Apache 2.0 License. See [LICENSE](LICENSE).
 ---
 
 Built for developers. Zero config. Just works.
+
+---
+
+<div align="right">
+  <sub>Powered by <a href="https://idealvibe.online">IdealVibe</a></sub>
+</div>
