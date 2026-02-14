@@ -237,7 +237,7 @@ npx vibesql-admin
 | Auth built-in | ❌ No* | ✅ Yes | ❌ No | ❌ No |
 | Use case | Local dev, prototyping | Production apps | Production apps | Production apps |
 
-**Note:** *VibeSQL Server (production version) includes HMAC authentication and tier-based rate limiting. See [VibeSQL Server](https://github.com/PayEz-Net/vibesql-server) for production deployments.
+**Note:** *VibeSQL Server (production version) includes HMAC authentication and configurable tier limits. See [VibeSQL Server](https://github.com/PayEz-Net/vibesql-server) for production deployments.
 
 ---
 
