@@ -316,9 +316,22 @@ Apache 2.0 License. See [LICENSE](LICENSE).
 
 ---
 
+## Use with AI
+
+Connect your AI tool to vibesql-micro in one command:
+
+- **Claude**: `npx @vibesql/mcp` — [MCP server](https://github.com/PayEz-Net/vibesql-skills/tree/master/claude-mcp)
+- **ChatGPT**: Install "VibeSQL Assistant" from the GPT Store — [setup guide](https://github.com/PayEz-Net/vibesql-skills/tree/master/openai-gpt)
+- **Gemini**: Function declarations + SDK integration — [extension](https://github.com/PayEz-Net/vibesql-skills/tree/master/gemini-extension)
+
+Full details and all AI integrations: [vibesql-skills](https://github.com/PayEz-Net/vibesql-skills)
+
+---
+
 ## Links
 
 - **Website:** [vibesql.online](https://vibesql.online)
+- **AI Integrations:** [github.com/PayEz-Net/vibesql-skills](https://github.com/PayEz-Net/vibesql-skills)
 - **Admin UI:** [github.com/PayEz-Net/vibesql-admin](https://github.com/PayEz-Net/vibesql-admin)
 - **Docs:** [vibesql.online/docs](https://vibesql.online/docs)
 - **Discord:** [discord.gg/vibesql](https://discord.gg/vibesql)
