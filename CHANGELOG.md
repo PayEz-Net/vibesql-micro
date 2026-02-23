@@ -7,6 +7,16 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.0.3] - 2026-02-23
+
+Parameterized query support — pass `params` alongside `sql` for safe, typed queries.
+
+### Added
+- Optional `params` array in request body: `{"sql": "SELECT $1::text", "params": ["hello"]}`
+- PostgreSQL native `$1`, `$2`, ... placeholders with automatic type inference
+- Full CRUD support: SELECT, INSERT, UPDATE, DELETE all work with params
+- Backward compatible — existing raw SQL requests without params work unchanged
+
 ## [1.0.2] - 2026-02-23
 
 Better startup diagnostics — when PostgreSQL fails to start, you now see exactly why.
@@ -43,6 +53,7 @@ First public release.
 
 ---
 
+[1.0.3]: https://github.com/PayEz-Net/vibesql-micro/releases/tag/v1.0.3
 [1.0.2]: https://github.com/PayEz-Net/vibesql-micro/releases/tag/v1.0.2
 [1.0.1]: https://github.com/PayEz-Net/vibesql-micro/releases/tag/v1.0.1
 [1.0.0]: https://github.com/PayEz-Net/vibesql-micro/releases/tag/v1.0.0
