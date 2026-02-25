@@ -7,6 +7,14 @@
     "vibesql-micro": "./bin/vibesql-micro.js",
     "vibe": "./bin/vibesql-micro.js"
   },
+  "files": [
+    "index.js",
+    "bin/vibesql-micro.js",
+    "scripts/install.js",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
   "scripts": {
     "postinstall": "node scripts/install.js"
   },
@@ -18,7 +26,9 @@
     "jsonb",
     "http-api",
     "developer-tools",
-    "zero-config"
+    "zero-config",
+    "embedded",
+    "vibesql"
   ],
   "author": "PayEz <opensource@payez.net>",
   "license": "Apache-2.0",
