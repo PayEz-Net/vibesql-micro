@@ -7,6 +7,23 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.0.7] - 2026-02-25
+
+Binary relocation — embedded PostgreSQL now works on any system regardless of temp directory paths.
+
+### Fixed
+- **Linux: `initdb` failed with `could not access file "$libdir/dict_snowball": No such file or directory`** — `plpgsql.so` and `dict_snowball.so` extension libraries were not being extracted on Linux (only Windows DLLs were extracted)
+- **Linux: PostgreSQL could not find timezone files** — the compiled-in `PKGDATADIR` path (e.g., `/opt/postgres_micro/share`) didn't match the runtime temp extraction directory, so the `postgres --boot` subprocess spawned by `initdb` couldn't locate `share/timezone/`
+
+### Added
+- **Binary relocation engine** (`relocate.go`) — at startup, scans each extracted binary for compiled-in install paths and patches them in-place (null-padded) to point at the actual extraction directory. Same technique used by `embedded-postgres-go` and other production embedded PG libraries.
+- Patches all 9 PostgreSQL baked-in paths: `share`, `share/locale`, `share/man`, `share/doc`, `lib`, `include`, `include/server`, `etc`, `bin`
+- Embedded `plpgsql.so` and `dict_snowball.so` for Linux — PostgreSQL extensions required by `initdb` post-bootstrap
+
+### Changed
+- Temp directory prefix shortened from `vibe-postgres-*` to `vb-*` so runtime paths fit within the compiled-in path's byte length
+- `Dockerfile.postgres-builder` updated: longer install prefix (`/opt/vibesql/postgres_micro_embedded`) for more relocation headroom, now exports all binaries + extensions + libraries
+
 ## [1.0.6] - 2026-02-24
 
 Install script version check — npm upgrades now correctly replace outdated binaries.
@@ -86,6 +103,7 @@ First public release.
 
 ---
 
+[1.0.7]: https://github.com/PayEz-Net/vibesql-micro/releases/tag/v1.0.7
 [1.0.6]: https://github.com/PayEz-Net/vibesql-micro/releases/tag/v1.0.6
 [1.0.5]: https://github.com/PayEz-Net/vibesql-micro/releases/tag/v1.0.5
 [1.0.4]: https://github.com/PayEz-Net/vibesql-micro/releases/tag/v1.0.4

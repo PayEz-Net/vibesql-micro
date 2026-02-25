@@ -217,7 +217,7 @@ func (m *Manager) extractBinaries() error {
 	platform := fmt.Sprintf("%s_%s", runtime.GOOS, runtime.GOARCH)
 	ext := platformBinExt()
 
-	tmpDir, err := os.MkdirTemp("", "vibe-postgres-*")
+	tmpDir, err := os.MkdirTemp("", "vb-*")
 	if err != nil {
 		return fmt.Errorf("failed to create temp directory: %w", err)
 	}
@@ -307,6 +307,18 @@ func (m *Manager) extractBinaries() error {
 				_ = os.WriteFile(filepath.Join(libDir, dllName), dllData, 0644)
 			}
 		}
+	} else {
+		// Extract PostgreSQL extension .so files to lib directory (for $libdir)
+		linuxExtSOs := []string{
+			"plpgsql.so",
+			"dict_snowball.so",
+		}
+		for _, soName := range linuxExtSOs {
+			soData, soErr := embeddedPostgres.ReadFile("embed/" + soName)
+			if soErr == nil {
+				_ = os.WriteFile(filepath.Join(libDir, soName), soData, 0755)
+			}
+		}
 	}
 
 	m.libDir = libDir
@@ -321,6 +333,13 @@ func (m *Manager) extractBinaries() error {
 	}
 
 	m.shareDir = filepath.Join(tmpDir, "share")
+
+	// Relocate compiled-in PKGDATADIR/LIBDIR paths in the extracted binaries
+	// to point at our actual temp extraction directory. Without this, the
+	// postgres subprocess spawned by initdb --boot can't find timezone files.
+	if err := relocateBinaries(m); err != nil {
+		return fmt.Errorf("failed to relocate binaries: %w", err)
+	}
 
 	// Windows workaround: EDB binaries have hardcoded /share and $libdir paths
 	// which Windows interprets as <drive>:\share and <drive>:\lib

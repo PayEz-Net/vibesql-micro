@@ -1,4 +1,4 @@
-# Dockerfile for building minimal PostgreSQL binary
+# Dockerfile for building minimal PostgreSQL binary + extensions
 # Usage: docker build -f Dockerfile.postgres-builder -t postgres-builder .
 #        docker run --rm -v $(pwd):/output postgres-builder
 
@@ -10,6 +10,9 @@ RUN apt-get update && apt-get install -y \
     wget \
     tar \
     bc \
+    bison \
+    flex \
+    perl \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
@@ -17,6 +20,11 @@ WORKDIR /build
 
 # PostgreSQL version
 ARG POSTGRES_VERSION=16.1
+
+# Use a long prefix path to give binary relocation plenty of headroom.
+# At runtime, vibesql-micro patches these compiled-in paths to point at
+# the actual temp extraction directory (which must be shorter).
+ARG INSTALL_PREFIX=/opt/vibesql/postgres_micro_embedded
 
 # Download PostgreSQL
 RUN wget https://ftp.postgresql.org/pub/source/v${POSTGRES_VERSION}/postgresql-${POSTGRES_VERSION}.tar.gz && \
@@ -26,7 +34,7 @@ RUN wget https://ftp.postgresql.org/pub/source/v${POSTGRES_VERSION}/postgresql-$
 # Configure with minimal features
 WORKDIR /build/postgresql
 RUN ./configure \
-    --prefix=/opt/postgres_micro \
+    --prefix=${INSTALL_PREFIX} \
     --without-readline \
     --without-zlib \
     --without-openssl \
@@ -46,17 +54,22 @@ RUN ./configure \
 # Build PostgreSQL
 RUN make -j$(nproc) && make install
 
-# Strip debug symbols
-RUN strip --strip-all /opt/postgres_micro/bin/postgres
+# Strip debug symbols from all binaries and shared libs
+RUN strip --strip-all ${INSTALL_PREFIX}/bin/postgres \
+                      ${INSTALL_PREFIX}/bin/initdb \
+                      ${INSTALL_PREFIX}/bin/pg_ctl 2>/dev/null || true
+RUN find ${INSTALL_PREFIX}/lib -name "*.so" -exec strip --strip-all {} \; 2>/dev/null || true
 
-# Create output stage
-FROM scratch AS export
-COPY --from=builder /opt/postgres_micro/bin/postgres /postgres_micro_linux_amd64
-
-# Default command copies binary to mounted volume
+# Default command copies all needed files to mounted volume
 FROM builder AS final
-CMD ["sh", "-c", "cp /opt/postgres_micro/bin/postgres /output/postgres_micro_linux_amd64 && \
-                  chmod +x /output/postgres_micro_linux_amd64 && \
-                  ls -lh /output/postgres_micro_linux_amd64 && \
-                  echo 'Binary size:' && \
-                  stat -f%z /output/postgres_micro_linux_amd64 2>/dev/null || stat -c%s /output/postgres_micro_linux_amd64"]
+CMD ["sh", "-c", "\
+    cp ${INSTALL_PREFIX}/bin/postgres /output/postgres_micro_linux_amd64 && \
+    cp ${INSTALL_PREFIX}/bin/initdb /output/initdb_linux_amd64 && \
+    cp ${INSTALL_PREFIX}/bin/pg_ctl /output/pg_ctl_linux_amd64 && \
+    cp ${INSTALL_PREFIX}/lib/libpq.so.5 /output/libpq.so.5 && \
+    cp ${INSTALL_PREFIX}/lib/plpgsql.so /output/plpgsql.so && \
+    cp ${INSTALL_PREFIX}/lib/dict_snowball.so /output/dict_snowball.so && \
+    chmod +x /output/postgres_micro_linux_amd64 /output/initdb_linux_amd64 /output/pg_ctl_linux_amd64 && \
+    echo '=== Build Output ===' && \
+    ls -lh /output/postgres_micro_linux_amd64 /output/initdb_linux_amd64 /output/pg_ctl_linux_amd64 /output/libpq.so.5 /output/plpgsql.so /output/dict_snowball.so && \
+    echo 'Done!'"]
