@@ -1,0 +1,155 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+  --vibe-primary: #336791;
+  --vibe-accent: #2563EB;
+  --vibe-dark: #1e3a5f;
+  --vibe-light: #4a90c2;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  color: #e2e8f0;
+  min-height: 100vh;
+}
+
+/* Code/terminal styling */
+.code-block {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(51, 103, 145, 0.3);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+/* Glowing text effect */
+.text-glow {
+  text-shadow: 0 0 10px rgba(37, 99, 235, 0.5),
+               0 0 20px rgba(37, 99, 235, 0.3),
+               0 0 30px rgba(37, 99, 235, 0.2);
+}
+
+/* Card hover effects */
+.card-hover {
+  transition: all 0.3s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(37, 99, 235, 0.15);
+}
+
+/* Gradient border effect */
+.gradient-border {
+  position: relative;
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  border-radius: 12px;
+}
+
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  padding: 1px;
+  background: linear-gradient(135deg, #336791, #2563EB, #336791);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+/* Countdown number styling */
+.countdown-number {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Button styles */
+.btn-primary {
+  @apply bg-gradient-to-r from-vibe-primary to-vibe-accent text-white font-semibold py-3 px-8 rounded-lg;
+  @apply transition-all duration-300 hover:shadow-lg hover:shadow-vibe-accent/25;
+  @apply hover:scale-105 active:scale-95;
+}
+
+.btn-secondary {
+  @apply border-2 border-vibe-primary text-vibe-light font-semibold py-3 px-8 rounded-lg;
+  @apply transition-all duration-300 hover:bg-vibe-primary/10 hover:border-vibe-accent;
+}
+
+/* Section styling */
+.section-container {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24;
+}
+
+/* Prize card styling */
+.prize-card {
+  @apply p-6 rounded-xl transition-all duration-300;
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.8), rgba(15, 23, 42, 0.9));
+  border: 1px solid rgba(51, 103, 145, 0.3);
+}
+
+.prize-card:hover {
+  border-color: rgba(37, 99, 235, 0.5);
+  box-shadow: 0 0 30px rgba(37, 99, 235, 0.1);
+}
+
+/* Form styling */
+.form-input {
+  @apply w-full px-4 py-3 rounded-lg bg-slate-800/50 border border-slate-600;
+  @apply focus:outline-none focus:ring-2 focus:ring-vibe-accent focus:border-transparent;
+  @apply text-white placeholder-slate-400 transition-all duration-200;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-slate-300 mb-2;
+}
+
+/* Timeline styling */
+.timeline-item {
+  @apply relative pl-8 pb-8 border-l-2 border-vibe-primary/30 last:border-0 last:pb-0;
+}
+
+.timeline-item::before {
+  content: '';
+  @apply absolute left-0 top-0 w-4 h-4 rounded-full bg-vibe-accent -translate-x-1/2;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #336791;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2563EB;
+}
+
+/* Selection styling */
+::selection {
+  background: rgba(37, 99, 235, 0.3);
+  color: #fff;
+}
