@@ -2,6 +2,7 @@
 build/output/
 build/postgres_micro*
 *.exe
+!internal/postgres/embed/*.exe
 /vibe
 /vibe-*
 

@@ -9,7 +9,7 @@ import (
 // These can be overridden at build time using ldflags
 var (
 	// Version is the semantic version of VibeSQL
-	Version = "1.0.0"
+	Version = "1.1.0"
 
 	// GitCommit is the git commit hash
 	GitCommit = "dev"

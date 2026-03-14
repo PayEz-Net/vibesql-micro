@@ -1,6 +1,6 @@
 {
   "name": "vibesql-micro",
-  "version": "1.0.7",
+  "version": "1.1.0",
   "description": "PostgreSQL + JSONB + HTTP API in one command. Embedded PostgreSQL 16.1 for edge computing.",
   "main": "index.js",
   "bin": {
