@@ -9,7 +9,8 @@ import (
 
 // QueryRequest represents an incoming SQL query request
 type QueryRequest struct {
-	SQL string `json:"sql"`
+	SQL    string        `json:"sql"`
+	Params []interface{} `json:"params,omitempty"`
 }
 
 // QueryResponse represents a query response (success or error)

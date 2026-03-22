@@ -26,13 +26,13 @@ func NewExecutor(db *sql.DB) *Executor {
 	return &Executor{db: db}
 }
 
-func (e *Executor) Execute(sql string) (*ExecutionResult, error) {
+func (e *Executor) Execute(sql string, params ...interface{}) (*ExecutionResult, error) {
 	startTime := time.Now()
 
 	ctx, cancel := context.WithTimeout(context.Background(), QueryTimeout)
 	defer cancel()
 
-	rows, err := e.db.QueryContext(ctx, sql)
+	rows, err := e.db.QueryContext(ctx, sql, params...)
 	if err != nil {
 		vibeErr := postgres.TranslateError(err)
 		return nil, vibeErr

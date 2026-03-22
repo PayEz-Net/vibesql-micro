@@ -2,7 +2,7 @@ package query
 
 // QueryExecutor defines the interface for executing SQL queries
 type QueryExecutor interface {
-	Execute(sql string) (*ExecutionResult, error)
+	Execute(sql string, params ...interface{}) (*ExecutionResult, error)
 }
 
 // Ensure Executor implements QueryExecutor

@@ -74,7 +74,7 @@ func (h *Handler) HandleQuery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := h.executor.Execute(req.SQL)
+	result, err := h.executor.Execute(req.SQL, req.Params...)
 	if err != nil {
 		if vibeErr, ok := err.(*postgres.VibeError); ok {
 			WriteError(w, vibeErr)
