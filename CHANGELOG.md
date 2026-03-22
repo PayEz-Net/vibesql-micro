@@ -7,6 +7,22 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.2.0] - 2026-03-22
+
+Parameterized query fix — `params` array in request body now correctly passes through to PostgreSQL's prepared statement driver.
+
+### Fixed
+- **`params` array was silently ignored** — the `QueryRequest` struct only had an `sql` field. The `params` field from the JSON request body was dropped by the unmarshaler. Queries using `$1`, `$2` placeholders failed with "there is no parameter $1". Now correctly passes params to `db.QueryContext()` as prepared statement arguments.
+
+### Changed
+- `QueryRequest` struct now includes `Params []interface{}` field
+- `QueryExecutor.Execute()` accepts variadic `params ...interface{}`
+- Backward compatible — callers that omit `params` work unchanged
+
+## [1.1.0] - 2026-03-14
+
+Windows support fix — embedded PostgreSQL binaries added for Windows x64.
+
 ## [1.0.7] - 2026-02-25
 
 Binary relocation — embedded PostgreSQL now works on any system regardless of temp directory paths.
@@ -103,6 +119,8 @@ First public release.
 
 ---
 
+[1.2.0]: https://github.com/PayEz-Net/vibesql-micro/releases/tag/v1.2.0
+[1.1.0]: https://github.com/PayEz-Net/vibesql-micro/releases/tag/v1.1.0
 [1.0.7]: https://github.com/PayEz-Net/vibesql-micro/releases/tag/v1.0.7
 [1.0.6]: https://github.com/PayEz-Net/vibesql-micro/releases/tag/v1.0.6
 [1.0.5]: https://github.com/PayEz-Net/vibesql-micro/releases/tag/v1.0.5
