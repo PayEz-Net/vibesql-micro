@@ -1,3 +1,9 @@
 *.vsql
 *.vsql.data/
 test*.vsql*
+
+# Compiled binaries
+vsql-micro
+vsql-micro-linux
+vsql-micro.exe
+vsql-micro-windows.exe
