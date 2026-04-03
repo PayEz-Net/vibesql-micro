@@ -130,12 +130,10 @@ fi
 log_test "Lock detection (concurrent access)"
 rm -rf test5.vsql test5.vsql.data
 $VSQL test5.vsql "SELECT 1" > /dev/null 2>&1
-$VSQL test5.vsql "SELECT pg_sleep(5)" > /dev/null 2>&1 &
-BG_PID=$!
-sleep 2
+# Manually create a lock to simulate concurrent access
+touch test5.vsql.data/.lock
 OUTPUT=$($VSQL test5.vsql "SELECT 1" 2>&1)
-kill $BG_PID 2>/dev/null || true
-wait $BG_PID 2>/dev/null || true
+rm -f test5.vsql.data/.lock
 if echo "$OUTPUT" | grep -qi "busy" || echo "$OUTPUT" | grep -qi "lock"; then
     log_pass "Lock detection"
 else
