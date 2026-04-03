@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"time"
 	
 	_ "github.com/lib/pq"
@@ -98,16 +99,21 @@ func runInitdb(initdbBin, shareDir, dataDir string) error {
 	
 	binDir := filepath.Dir(initdbBin)
 	cmd := exec.Command(initdbBin, args...)
-	cmd.Dir = binDir // Set working dir to find DLLs
+	cmd.Dir = binDir
 	
-	// Set up environment with PATH including binary directory for DLL loading
+	// Set up environment
 	env := os.Environ()
 	env = append(env, "PGSHAREDIR="+shareDir)
+	env = append(env, "LD_LIBRARY_PATH="+binDir)
 	
-	// Prepend binary directory to PATH so Windows can find DLLs
+	// Prepend binary directory to PATH for Windows DLL loading
 	for i, e := range env {
 		if len(e) > 5 && e[:5] == "PATH=" {
-			env[i] = "PATH=" + binDir + ";" + e[5:]
+			if runtime.GOOS == "windows" {
+				env[i] = "PATH=" + binDir + ";" + e[5:]
+			} else {
+				env[i] = "PATH=" + binDir + ":" + e[5:]
+			}
 			break
 		}
 	}
@@ -126,16 +132,21 @@ func (p *Process) start(postgresBin, shareDir string) error {
 		"-D", p.dataDir,
 		"-p", fmt.Sprintf("%d", p.port),
 		"-h", "127.0.0.1",
-		"-k", "", // Disable Unix sockets on Windows
+	}
+	
+	// Disable Unix sockets on Windows
+	if runtime.GOOS == "windows" {
+		args = append(args, "-k", "")
 	}
 	
 	binDir := filepath.Dir(postgresBin)
 	p.cmd = exec.Command(postgresBin, args...)
-	p.cmd.Dir = binDir // Set working dir to find DLLs
+	p.cmd.Dir = binDir
 	
-	// Set up environment with PATH including binary directory for DLL loading
+	// Set up environment
 	env := os.Environ()
 	env = append(env, "PGSHAREDIR="+shareDir)
+	env = append(env, "LD_LIBRARY_PATH="+binDir)
 	
 	// Prepend binary directory to PATH so Windows can find DLLs
 	for i, e := range env {
