@@ -67,7 +67,7 @@ func OpenWithProgress(path string, progress func(string)) (*DB, error) {
 		progress("done")
 	}
 	
-	// Create data directory if it doesn't exist
+	// Check if database already exists
 	isNew := false
 	if _, err := os.Stat(dataDir); os.IsNotExist(err) {
 		isNew = true
@@ -75,13 +75,13 @@ func OpenWithProgress(path string, progress func(string)) (*DB, error) {
 			progress("Creating database...")
 		}
 		
-		if err := os.MkdirAll(dataDir, 0755); err != nil {
-			return nil, fmt.Errorf("create data directory: %w", err)
+		// Create parent directory for dataDir
+		if err := os.MkdirAll(filepath.Dir(dataDir), 0755); err != nil {
+			return nil, fmt.Errorf("create parent directory: %w", err)
 		}
 		
-		// Create marker file (initdb will be run by postgres.Start)
+		// Create marker file (initdb will create dataDir)
 		if err := createMarker(markerFile); err != nil {
-			os.RemoveAll(dataDir)
 			return nil, fmt.Errorf("create marker: %w", err)
 		}
 		
@@ -90,16 +90,16 @@ func OpenWithProgress(path string, progress func(string)) (*DB, error) {
 		}
 	}
 	
-	// Create lock
-	if err := createLock(dataDir); err != nil {
-		return nil, fmt.Errorf("lock database: %w", err)
-	}
-	
-	// Start postgres (finds free port automatically)
+	// Start postgres (finds free port automatically, creates dataDir via initdb if new)
 	pg, err := postgres.Start(postgresBin, initdbBin, shareDir, dataDir)
 	if err != nil {
-		removeLock(dataDir)
 		return nil, fmt.Errorf("start postgres: %w", err)
+	}
+	
+	// Create lock (now that dataDir exists)
+	if err := createLock(dataDir); err != nil {
+		pg.Stop()
+		return nil, fmt.Errorf("lock database: %w", err)
 	}
 	
 	db := &DB{

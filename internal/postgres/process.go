@@ -96,10 +96,22 @@ func runInitdb(initdbBin, shareDir, dataDir string) error {
 		"--username=postgres",
 	}
 	
+	binDir := filepath.Dir(initdbBin)
 	cmd := exec.Command(initdbBin, args...)
-	cmd.Env = append(os.Environ(),
-		"PGSHAREDIR="+shareDir,
-	)
+	cmd.Dir = binDir // Set working dir to find DLLs
+	
+	// Set up environment with PATH including binary directory for DLL loading
+	env := os.Environ()
+	env = append(env, "PGSHAREDIR="+shareDir)
+	
+	// Prepend binary directory to PATH so Windows can find DLLs
+	for i, e := range env {
+		if len(e) > 5 && e[:5] == "PATH=" {
+			env[i] = "PATH=" + binDir + ";" + e[5:]
+			break
+		}
+	}
+	cmd.Env = env
 	
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -117,10 +129,22 @@ func (p *Process) start(postgresBin, shareDir string) error {
 		"-k", "", // Disable Unix sockets on Windows
 	}
 	
+	binDir := filepath.Dir(postgresBin)
 	p.cmd = exec.Command(postgresBin, args...)
-	p.cmd.Env = append(os.Environ(),
-		"PGSHAREDIR="+shareDir,
-	)
+	p.cmd.Dir = binDir // Set working dir to find DLLs
+	
+	// Set up environment with PATH including binary directory for DLL loading
+	env := os.Environ()
+	env = append(env, "PGSHAREDIR="+shareDir)
+	
+	// Prepend binary directory to PATH so Windows can find DLLs
+	for i, e := range env {
+		if len(e) > 5 && e[:5] == "PATH=" {
+			env[i] = "PATH=" + binDir + ";" + e[5:]
+			break
+		}
+	}
+	p.cmd.Env = env
 	
 	// Capture output for debugging
 	stdout, err := p.cmd.StdoutPipe()

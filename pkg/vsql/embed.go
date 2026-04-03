@@ -19,7 +19,47 @@ import (
 //go:embed embed/share.tar.gz
 //go:embed embed/vcruntime140.dll
 //go:embed embed/msvcp140.dll
+//go:embed embed/libpq-5.dll
+//go:embed embed/libcrypto-3-x64.dll
+//go:embed embed/libssl-3-x64.dll
+//go:embed embed/libiconv-2.dll
+//go:embed embed/libintl-9.dll
+//go:embed embed/libwinpthread-1.dll
+//go:embed embed/zlib1.dll
+//go:embed embed/liblz4.dll
+//go:embed embed/libzstd.dll
+//go:embed embed/libxml2.dll
+//go:embed embed/icudt67.dll
+//go:embed embed/icuin67.dll
+//go:embed embed/icuuc67.dll
+//go:embed embed/icuio67.dll
+//go:embed embed/icutu67.dll
+//go:embed embed/dict_snowball.dll
+//go:embed embed/plpgsql.dll
 var embeddedFiles embed.FS
+
+// dlls is the list of DLLs to extract
+var dlls = []string{
+	"vcruntime140.dll",
+	"msvcp140.dll",
+	"libpq-5.dll",
+	"libcrypto-3-x64.dll",
+	"libssl-3-x64.dll",
+	"libiconv-2.dll",
+	"libintl-9.dll",
+	"libwinpthread-1.dll",
+	"zlib1.dll",
+	"liblz4.dll",
+	"libzstd.dll",
+	"libxml2.dll",
+	"icudt67.dll",
+	"icuin67.dll",
+	"icuuc67.dll",
+	"icuio67.dll",
+	"icutu67.dll",
+	"dict_snowball.dll",
+	"plpgsql.dll",
+}
 
 // ensureBinary extracts postgres binaries if needed and returns the paths
 func ensureBinary(progress func(string)) (postgresPath string, initdbPath string, sharePath string, firstTime bool, err error) {
@@ -66,14 +106,18 @@ func ensureBinary(progress func(string)) (postgresPath string, initdbPath string
 		return "", "", "", false, err
 	}
 	
-	// Extract MSVC runtime DLLs
-	if err := extractFile("embed/vcruntime140.dll", filepath.Join(binDir, "vcruntime140.dll")); err != nil {
-		// Non-fatal - may already be on system
-		fmt.Fprintf(os.Stderr, "Warning: could not extract vcruntime140.dll: %v\n", err)
+	// Extract all DLLs
+	for _, dll := range dlls {
+		if err := extractFile("embed/"+dll, filepath.Join(binDir, dll)); err != nil {
+			// Log but continue - some DLLs might already be on system
+			fmt.Fprintf(os.Stderr, "Warning: could not extract %s: %v\n", dll, err)
+		}
 	}
-	if err := extractFile("embed/msvcp140.dll", filepath.Join(binDir, "msvcp140.dll")); err != nil {
-		// Non-fatal - may already be on system
-		fmt.Fprintf(os.Stderr, "Warning: could not extract msvcp140.dll: %v\n", err)
+	
+	// Also copy libpq to LIBPQ.dll (uppercase) - Windows PostgreSQL looks for this name
+	libpqData, err := embeddedFiles.ReadFile("embed/libpq-5.dll")
+	if err == nil {
+		_ = os.WriteFile(filepath.Join(binDir, "LIBPQ.dll"), libpqData, 0644)
 	}
 	
 	// Extract share.tar.gz
