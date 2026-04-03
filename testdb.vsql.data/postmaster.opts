@@ -1,0 +1,1 @@
+C:/Users/jon-local/AppData/Local/vibesql-micro/bin-0.1.0/postgres.exe "-D" "E:\Repos\vibe\vibesql-micro-v2\testdb.vsql.data" "-p" "58752" "-h" "127.0.0.1" "-k" ""
