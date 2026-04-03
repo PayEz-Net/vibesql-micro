@@ -18,7 +18,7 @@ All notable changes to vibesql-micro will be documented in this file.
   - Close/reopen persistence
 
 ### Verified
-- Linux build fully validated via ZeroClaw agent on 10.0.0.93.
+- Linux build fully validated on Ubuntu (x64).
   - 23/23 unit tests passing
   - 26/26 integration tests passing
   - 18/18 CLI tests passing

@@ -152,12 +152,11 @@ go test ./internal/postgres/ -v
 go run test_integration.go
 ```
 
-### Phase 3: Linux Validation (Remote — 93 via ZeroClaw)
+### Phase 3: Linux Validation
 ```bash
-# On 93
-cd ~/repos/vibesql-micro-v2
 go test ./... -v
 go run test_integration.go
+bash test_linux_cli.sh
 ```
 
 ### Phase 4: Ship Criteria
