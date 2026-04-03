@@ -2,11 +2,15 @@ package postgres
 
 import (
 	"bufio"
+	"database/sql"
 	"fmt"
+	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"time"
+	
+	_ "github.com/lib/pq"
 )
 
 // Process manages a postgres subprocess
@@ -14,12 +18,30 @@ type Process struct {
 	cmd      *exec.Cmd
 	dataDir  string
 	port     int
-	ready    bool
+	db       *sql.DB
 	shutdown chan struct{}
 }
 
+// findFreePort finds an available TCP port
+func findFreePort() (int, error) {
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		return 0, err
+	}
+	defer listener.Close()
+	
+	addr := listener.Addr().(*net.TCPAddr)
+	return addr.Port, nil
+}
+
 // Start initializes and starts postgres
-func Start(postgresBin, initdbBin, shareDir, dataDir string, port int) (*Process, error) {
+func Start(postgresBin, initdbBin, shareDir, dataDir string) (*Process, error) {
+	// Find a free port
+	port, err := findFreePort()
+	if err != nil {
+		return nil, fmt.Errorf("find free port: %w", err)
+	}
+	
 	// Check if already initialized
 	pgVersionFile := filepath.Join(dataDir, "PG_VERSION")
 	if _, err := os.Stat(pgVersionFile); os.IsNotExist(err) {
@@ -40,6 +62,28 @@ func Start(postgresBin, initdbBin, shareDir, dataDir string, port int) (*Process
 		return nil, err
 	}
 	
+	// Connect to the database
+	connStr := fmt.Sprintf("host=localhost port=%d user=postgres dbname=postgres sslmode=disable", port)
+	db, err := sql.Open("postgres", connStr)
+	if err != nil {
+		p.Stop()
+		return nil, fmt.Errorf("open database: %w", err)
+	}
+	
+	// Wait for connection to be ready
+	for i := 0; i < 30; i++ {
+		if err := db.Ping(); err == nil {
+			break
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+	
+	if err := db.Ping(); err != nil {
+		p.Stop()
+		return nil, fmt.Errorf("database not ready: %w", err)
+	}
+	
+	p.db = db
 	return p, nil
 }
 
@@ -97,34 +141,26 @@ func (p *Process) start(postgresBin, shareDir string) error {
 	go func() {
 		scanner := bufio.NewScanner(stdout)
 		for scanner.Scan() {
-			// Log or discard
+			// Discard or log
 		}
 	}()
 	
 	go func() {
 		scanner := bufio.NewScanner(stderr)
 		for scanner.Scan() {
-			// Log or discard
+			// Discard or log
 		}
 	}()
 	
-	// Wait for ready
-	if err := p.waitForReady(); err != nil {
-		p.Stop()
-		return err
-	}
-	
-	return nil
-}
-
-func (p *Process) waitForReady() error {
-	// Simple wait - in production would check port
-	time.Sleep(1 * time.Second)
 	return nil
 }
 
 // Stop shuts down postgres gracefully
 func (p *Process) Stop() error {
+	if p.db != nil {
+		p.db.Close()
+	}
+	
 	if p.cmd == nil || p.cmd.Process == nil {
 		return nil
 	}
@@ -151,4 +187,9 @@ func (p *Process) Stop() error {
 // Port returns the postgres port
 func (p *Process) Port() int {
 	return p.port
+}
+
+// DB returns the database connection
+func (p *Process) DB() *sql.DB {
+	return p.db
 }

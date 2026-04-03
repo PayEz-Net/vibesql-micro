@@ -15,7 +15,6 @@ type DB struct {
 	dataDir    string
 	markerFile string
 	postgres   *postgres.Process
-	port       int
 	mu         sync.Mutex
 	closed     bool
 }
@@ -96,11 +95,8 @@ func OpenWithProgress(path string, progress func(string)) (*DB, error) {
 		return nil, fmt.Errorf("lock database: %w", err)
 	}
 	
-	// Find a free port
-	port := 5433 // TODO: Find free port
-	
-	// Start postgres
-	pg, err := postgres.Start(postgresBin, initdbBin, shareDir, dataDir, port)
+	// Start postgres (finds free port automatically)
+	pg, err := postgres.Start(postgresBin, initdbBin, shareDir, dataDir)
 	if err != nil {
 		removeLock(dataDir)
 		return nil, fmt.Errorf("start postgres: %w", err)
@@ -111,7 +107,6 @@ func OpenWithProgress(path string, progress func(string)) (*DB, error) {
 		dataDir:    dataDir,
 		markerFile: markerFile,
 		postgres:   pg,
-		port:       port,
 	}
 	
 	// If new and no progress shown, show silent success

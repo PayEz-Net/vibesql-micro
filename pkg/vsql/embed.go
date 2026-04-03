@@ -17,6 +17,8 @@ import (
 //go:embed embed/postgres_micro_windows_amd64.exe
 //go:embed embed/initdb_windows_amd64.exe
 //go:embed embed/share.tar.gz
+//go:embed embed/vcruntime140.dll
+//go:embed embed/msvcp140.dll
 var embeddedFiles embed.FS
 
 // ensureBinary extracts postgres binaries if needed and returns the paths
@@ -55,23 +57,23 @@ func ensureBinary(progress func(string)) (postgresPath string, initdbPath string
 	}
 	
 	// Extract postgres.exe
-	postgresData, err := embeddedFiles.ReadFile("embed/postgres_micro_windows_amd64.exe")
-	if err != nil {
-		return "", "", "", false, fmt.Errorf("read embedded postgres: %w", err)
-	}
-	
-	if err := os.WriteFile(postgresPath, postgresData, 0755); err != nil {
-		return "", "", "", false, fmt.Errorf("write postgres binary: %w", err)
+	if err := extractFile("embed/postgres_micro_windows_amd64.exe", filepath.Join(binDir, "postgres.exe")); err != nil {
+		return "", "", "", false, err
 	}
 	
 	// Extract initdb.exe
-	initdbData, err := embeddedFiles.ReadFile("embed/initdb_windows_amd64.exe")
-	if err != nil {
-		return "", "", "", false, fmt.Errorf("read embedded initdb: %w", err)
+	if err := extractFile("embed/initdb_windows_amd64.exe", filepath.Join(binDir, "initdb.exe")); err != nil {
+		return "", "", "", false, err
 	}
 	
-	if err := os.WriteFile(initdbPath, initdbData, 0755); err != nil {
-		return "", "", "", false, fmt.Errorf("write initdb binary: %w", err)
+	// Extract MSVC runtime DLLs
+	if err := extractFile("embed/vcruntime140.dll", filepath.Join(binDir, "vcruntime140.dll")); err != nil {
+		// Non-fatal - may already be on system
+		fmt.Fprintf(os.Stderr, "Warning: could not extract vcruntime140.dll: %v\n", err)
+	}
+	if err := extractFile("embed/msvcp140.dll", filepath.Join(binDir, "msvcp140.dll")); err != nil {
+		// Non-fatal - may already be on system
+		fmt.Fprintf(os.Stderr, "Warning: could not extract msvcp140.dll: %v\n", err)
 	}
 	
 	// Extract share.tar.gz
@@ -85,6 +87,20 @@ func ensureBinary(progress func(string)) (postgresPath string, initdbPath string
 	}
 	
 	return postgresPath, initdbPath, sharePath, firstTime, nil
+}
+
+// extractFile extracts a single embedded file
+func extractFile(embedPath, destPath string) error {
+	data, err := embeddedFiles.ReadFile(embedPath)
+	if err != nil {
+		return fmt.Errorf("read embedded %s: %w", embedPath, err)
+	}
+	
+	if err := os.WriteFile(destPath, data, 0755); err != nil {
+		return fmt.Errorf("write %s: %w", destPath, err)
+	}
+	
+	return nil
 }
 
 // extractTarGz extracts a tar.gz archive
