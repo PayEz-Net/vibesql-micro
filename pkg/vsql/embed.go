@@ -5,13 +5,13 @@ package vsql
 
 import (
 	"archive/tar"
+	"bytes"
 	"compress/gzip"
 	"embed"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
-	"runtime"
 )
 
 //go:embed embed/postgres_micro_windows_amd64.exe
@@ -19,12 +19,7 @@ import (
 //go:embed embed/share.tar.gz
 var embeddedFiles embed.FS
 
-// binaryManager handles extraction and caching of postgres binaries
-type binaryManager struct {
-	binDir string
-}
-
-// ensureBinary extracts postgres binaries if needed and returns the path
+// ensureBinary extracts postgres binaries if needed and returns the paths
 func ensureBinary(progress func(string)) (postgresPath string, initdbPath string, sharePath string, firstTime bool, err error) {
 	// Determine cache directory
 	cacheDir, err := os.UserCacheDir()
@@ -41,15 +36,17 @@ func ensureBinary(progress func(string)) (postgresPath string, initdbPath string
 	
 	if _, err := os.Stat(postgresPath); err == nil {
 		if _, err := os.Stat(initdbPath); err == nil {
-			// Already extracted
-			return postgresPath, initdbPath, sharePath, false, nil
+			if _, err := os.Stat(sharePath); err == nil {
+				// Already extracted
+				return postgresPath, initdbPath, sharePath, false, nil
+			}
 		}
 	}
 	
 	// Need to extract
 	firstTime = true
 	if progress != nil {
-		progress("Setting up vibesql...")
+		progress("Setting up vibesql")
 	}
 	
 	// Create directory
@@ -87,42 +84,54 @@ func ensureBinary(progress func(string)) (postgresPath string, initdbPath string
 		return "", "", "", false, fmt.Errorf("extract share: %w", err)
 	}
 	
-	if progress != nil {
-		progress("done")
-	}
-	
 	return postgresPath, initdbPath, sharePath, firstTime, nil
 }
 
-// extractTarGz extracts a tar.gz archive to the destination directory
+// extractTarGz extracts a tar.gz archive
 func extractTarGz(data []byte, dst string) error {
-	gr, err := gzip.NewReader(io.NopCloser(io.NopCloser(nil)))
+	gr, err := gzip.NewReader(bytes.NewReader(data))
 	if err != nil {
 		return err
 	}
+	defer gr.Close()
 	
-	// We need to use bytes.Reader for gzip
-	gr, err = gzip.NewReader(io.NopCloser(io.NopCloser(nil)))
-	if err != nil {
-		return err
+	tr := tar.NewReader(gr)
+	
+	for {
+		header, err := tr.Next()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+		
+		target := filepath.Join(dst, header.Name)
+		
+		switch header.Typeflag {
+		case tar.TypeDir:
+			if err := os.MkdirAll(target, os.FileMode(header.Mode)); err != nil {
+				return err
+			}
+		case tar.TypeReg:
+			if err := os.MkdirAll(filepath.Dir(target), 0755); err != nil {
+				return err
+			}
+			
+			f, err := os.OpenFile(target, os.O_CREATE|os.O_RDWR, os.FileMode(header.Mode))
+			if err != nil {
+				return err
+			}
+			
+			if _, err := io.Copy(f, tr); err != nil {
+				f.Close()
+				return err
+			}
+			f.Close()
+		}
 	}
 	
-	// Re-implement with bytes
-	return extractTarGzImpl(data, dst)
-}
-
-func extractTarGzImpl(data []byte, dst string) error {
-	gr, err := gzip.NewReader(io.NopCloser(io.NopCloser(nil)))
-	if err != nil {
-		return err
-	}
-	
-	// Actually implement properly
-	return fmt.Errorf("extraction not fully implemented yet")
+	return nil
 }
 
 var version = "0.1.0"
-
-func init() {
-	runtime.GOMAXPROCS(1)
-}

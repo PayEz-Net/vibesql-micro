@@ -5,6 +5,8 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	
+	"github.com/vibesql/vibesql-micro/internal/postgres"
 )
 
 // DB represents a vibesql-micro database connection
@@ -12,7 +14,8 @@ type DB struct {
 	path       string
 	dataDir    string
 	markerFile string
-	postgres   *postgresProcess
+	postgres   *postgres.Process
+	port       int
 	mu         sync.Mutex
 	closed     bool
 }
@@ -77,13 +80,7 @@ func OpenWithProgress(path string, progress func(string)) (*DB, error) {
 			return nil, fmt.Errorf("create data directory: %w", err)
 		}
 		
-		// Initialize with initdb
-		if err := initDatabase(initdbBin, shareDir, dataDir); err != nil {
-			os.RemoveAll(dataDir)
-			return nil, fmt.Errorf("initialize database: %w", err)
-		}
-		
-		// Create marker file
+		// Create marker file (initdb will be run by postgres.Start)
 		if err := createMarker(markerFile); err != nil {
 			os.RemoveAll(dataDir)
 			return nil, fmt.Errorf("create marker: %w", err)
@@ -99,8 +96,11 @@ func OpenWithProgress(path string, progress func(string)) (*DB, error) {
 		return nil, fmt.Errorf("lock database: %w", err)
 	}
 	
+	// Find a free port
+	port := 5433 // TODO: Find free port
+	
 	// Start postgres
-	pg, err := startPostgres(postgresBin, shareDir, dataDir)
+	pg, err := postgres.Start(postgresBin, initdbBin, shareDir, dataDir, port)
 	if err != nil {
 		removeLock(dataDir)
 		return nil, fmt.Errorf("start postgres: %w", err)
@@ -111,6 +111,7 @@ func OpenWithProgress(path string, progress func(string)) (*DB, error) {
 		dataDir:    dataDir,
 		markerFile: markerFile,
 		postgres:   pg,
+		port:       port,
 	}
 	
 	// If new and no progress shown, show silent success
@@ -186,20 +187,4 @@ func createMarker(markerFile string) error {
 	return os.WriteFile(markerFile, []byte("vibesql-micro database\n"), 0644)
 }
 
-func initDatabase(initdbBin, shareDir, dataDir string) error {
-	// TODO: Run initdb
-	return fmt.Errorf("initDatabase not implemented")
-}
 
-func startPostgres(postgresBin, shareDir, dataDir string) (*postgresProcess, error) {
-	// TODO: Start postgres process
-	return nil, fmt.Errorf("startPostgres not implemented")
-}
-
-type postgresProcess struct {
-	// TODO
-}
-
-func (p *postgresProcess) Stop() {
-	// TODO
-}
