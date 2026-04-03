@@ -2,7 +2,8 @@
 # Comprehensive Linux CLI test suite for vsql-micro-v2
 set -e
 
-VSQL="${VSQL:-./vsql-micro-linux}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+VSQL="${VSQL:-$SCRIPT_DIR/vsql-micro-linux}"
 TEST_DIR="/tmp/vsql-cli-test-$$"
 PASSED=0
 FAILED=0
@@ -17,7 +18,10 @@ log_pass() { echo -e "${GREEN}[PASS]${NC} $1"; PASSED=$((PASSED + 1)); }
 log_fail() { echo -e "${RED}[FAIL]${NC} $1"; FAILED=$((FAILED + 1)); }
 
 mkdir -p "$TEST_DIR"
+cp "$VSQL" "$TEST_DIR/vsql-micro-linux"
+chmod +x "$TEST_DIR/vsql-micro-linux"
 cd "$TEST_DIR"
+VSQL="./vsql-micro-linux"
 
 echo "=========================================="
 echo "vsql-micro-v2 Linux CLI Test Suite"
@@ -43,7 +47,7 @@ fi
 
 # Test 3: Fresh database creation
 log_test "Fresh database creation"
-rm -rf test1.vsql*
+rm -rf test1.vsql test1.vsql.data
 OUTPUT=$($VSQL test1.vsql "SELECT 'fresh' as status" 2>&1)
 if echo "$OUTPUT" | grep -q "fresh"; then
     log_pass "Fresh database creation"
@@ -53,7 +57,7 @@ fi
 
 # Test 4: Progress indicator on first run
 log_test "Progress indicator on first run"
-rm -rf test2.vsql*
+rm -rf test2.vsql test2.vsql.data
 OUTPUT=$($VSQL test2.vsql "SELECT 1" 2>&1)
 if echo "$OUTPUT" | grep -qi "setting up\|creating\|done\|progress"; then
     log_pass "Progress indicator"
@@ -72,7 +76,7 @@ fi
 
 # Test 6: CREATE TABLE
 log_test "CREATE TABLE"
-rm -rf test3.vsql*
+rm -rf test3.vsql test3.vsql.data
 $VSQL test3.vsql "CREATE TABLE users (id SERIAL PRIMARY KEY, name TEXT)" > /dev/null 2>&1
 if [ $? -eq 0 ]; then
     log_pass "CREATE TABLE"
@@ -83,7 +87,7 @@ fi
 # Test 7: INSERT
 log_test "INSERT data"
 $VSQL test3.vsql "INSERT INTO users (name) VALUES ('Alice'), ('Bob'), ('Charlie')" > /dev/null 2>&1
-COUNT=$($VSQL test3.vsql "SELECT COUNT(*) as c FROM users" 2>&1 | grep -o '"c":[0-9]*' | cut -d: -f2)
+COUNT=$($VSQL test3.vsql "SELECT COUNT(*) as c FROM users" 2>&1 | grep -o '"c"[[:space:]]*:[[:space:]]*[0-9]*' | grep -o '[0-9]*$')
 if [ "$COUNT" = "3" ]; then
     log_pass "INSERT data"
 else
@@ -93,7 +97,7 @@ fi
 # Test 8: SELECT returns JSON
 log_test "SELECT returns valid JSON"
 OUTPUT=$($VSQL test3.vsql "SELECT * FROM users WHERE name='Alice'" 2>&1)
-if echo "$OUTPUT" | grep -q '"id":1' && echo "$OUTPUT" | grep -q '"name":"Alice"'; then
+if echo "$OUTPUT" | grep -q '"id"[[:space:]]*:[[:space:]]*1' && echo "$OUTPUT" | grep -q '"name"[[:space:]]*:[[:space:]]*"Alice"'; then
     log_pass "SELECT JSON"
 else
     log_fail "SELECT JSON: $OUTPUT"
@@ -104,7 +108,7 @@ log_test "Complex query (JOIN, aggregate)"
 $VSQL test3.vsql "CREATE TABLE orders (id SERIAL, user_id INT, amount DECIMAL)" > /dev/null 2>&1
 $VSQL test3.vsql "INSERT INTO orders (user_id, amount) VALUES (1, 100.00), (1, 200.00), (2, 50.00)" > /dev/null 2>&1
 OUTPUT=$($VSQL test3.vsql "SELECT u.name, SUM(o.amount) as total FROM users u JOIN orders o ON u.id = o.user_id GROUP BY u.name ORDER BY total DESC" 2>&1)
-if echo "$OUTPUT" | grep -q '"total":300'; then
+if echo "$OUTPUT" | grep -q '"total"[[:space:]]*:[[:space:]]*"300.00"'; then
     log_pass "Complex query"
 else
     log_fail "Complex query: $OUTPUT"
@@ -112,7 +116,7 @@ fi
 
 # Test 10: Data persistence
 log_test "Data persistence across reopen"
-rm -rf test4.vsql*
+rm -rf test4.vsql test4.vsql.data
 $VSQL test4.vsql "CREATE TABLE persistent (id SERIAL, data TEXT)" > /dev/null 2>&1
 $VSQL test4.vsql "INSERT INTO persistent (data) VALUES ('survive')" > /dev/null 2>&1
 OUTPUT=$($VSQL test4.vsql "SELECT data FROM persistent" 2>&1)
@@ -124,15 +128,15 @@ fi
 
 # Test 11: Lock detection
 log_test "Lock detection (concurrent access)"
-rm -rf test5.vsql*
+rm -rf test5.vsql test5.vsql.data
 $VSQL test5.vsql "SELECT 1" > /dev/null 2>&1
-$VSQL test5.vsql "SELECT pg_sleep(5)" &
+$VSQL test5.vsql "SELECT pg_sleep(5)" > /dev/null 2>&1 &
 BG_PID=$!
 sleep 2
 OUTPUT=$($VSQL test5.vsql "SELECT 1" 2>&1)
 kill $BG_PID 2>/dev/null || true
 wait $BG_PID 2>/dev/null || true
-if echo "$OUTPUT" | grep -qi "busy\|lock\|in use"; then
+if echo "$OUTPUT" | grep -qi "busy" || echo "$OUTPUT" | grep -qi "lock"; then
     log_pass "Lock detection"
 else
     log_fail "Lock detection: $OUTPUT"
@@ -140,7 +144,7 @@ fi
 
 # Test 12: JSONB support
 log_test "JSONB data type"
-rm -rf test6.vsql*
+rm -rf test6.vsql test6.vsql.data
 $VSQL test6.vsql "CREATE TABLE json_test (id SERIAL, data JSONB)" > /dev/null 2>&1
 $VSQL test6.vsql "INSERT INTO json_test (data) VALUES ('{\"key\": \"value\", \"num\": 42}')" > /dev/null 2>&1
 OUTPUT=$($VSQL test6.vsql "SELECT data->>'key' as val FROM json_test" 2>&1)
@@ -152,7 +156,7 @@ fi
 
 # Test 13: Error handling
 log_test "Error handling - invalid SQL"
-rm -rf test7.vsql*
+rm -rf test7.vsql test7.vsql.data
 OUTPUT=$($VSQL test7.vsql "INVALID SYNTAX HERE" 2>&1)
 if echo "$OUTPUT" | grep -qi "error\|syntax"; then
     log_pass "Error handling"
@@ -162,7 +166,7 @@ fi
 
 # Test 14: Unicode and special characters
 log_test "Unicode and special characters"
-rm -rf test8.vsql*
+rm -rf test8.vsql test8.vsql.data
 $VSQL test8.vsql "CREATE TABLE special (id SERIAL, data TEXT)" > /dev/null 2>&1
 $VSQL test8.vsql "INSERT INTO special (data) VALUES ('日本語'), ('🎉'), ('''quotes''')" > /dev/null 2>&1
 OUTPUT=$($VSQL test8.vsql "SELECT * FROM special ORDER BY id" 2>&1)
@@ -174,10 +178,10 @@ fi
 
 # Test 15: Large result set
 log_test "Large result set (1000 rows)"
-rm -rf test9.vsql*
+rm -rf test9.vsql test9.vsql.data
 $VSQL test9.vsql "CREATE TABLE large (id SERIAL)" > /dev/null 2>&1
 $VSQL test9.vsql "INSERT INTO large SELECT generate_series(1, 1000)" > /dev/null 2>&1
-COUNT=$($VSQL test9.vsql "SELECT COUNT(*) as c FROM large" 2>&1 | grep -o '"c":[0-9]*' | cut -d: -f2)
+COUNT=$($VSQL test9.vsql "SELECT COUNT(*) as c FROM large" 2>&1 | grep -o '"c"[[:space:]]*:[[:space:]]*[0-9]*' | grep -o '[0-9]*$')
 if [ "$COUNT" = "1000" ]; then
     log_pass "Large result set"
 else
@@ -204,7 +208,7 @@ fi
 
 # Test 18: Path with spaces
 log_test "Database path with spaces"
-rm -rf "path with spaces.vsql"*
+rm -rf "path with spaces.vsql" "path with spaces.vsql.data"
 OUTPUT=$("$VSQL" "path with spaces.vsql" "SELECT 'spaces' as result" 2>&1)
 if echo "$OUTPUT" | grep -q "spaces"; then
     log_pass "Path with spaces"
