@@ -99,6 +99,7 @@ func StartOnPort(postgresBin, initdbBin, shareDir, dataDir string, port int) (*P
 func runInitdb(initdbBin, shareDir, dataDir string) error {
 	args := []string{
 		"-D", dataDir,
+		"-L", shareDir,
 		"--no-locale",
 		"--encoding=UTF8",
 		"--auth=trust",

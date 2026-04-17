@@ -2,6 +2,11 @@
 
 All notable changes to vibesql-micro will be documented in this file.
 
+## [0.3.1] - 2026-04-17
+
+### Fixed
+- `runInitdb` now passes `-L <shareDir>` explicitly to `initdb` rather than relying on `PGSHAREDIR`. Required when the embedded PostgreSQL binary has a compiled-in `pkglibdir` that doesn't resolve to the extracted cache location (e.g. when running under systemd or in minimal containers where path probing falls back to the compiled-in default).
+
 ## [0.3.0] - 2026-04-17
 
 ### Added
