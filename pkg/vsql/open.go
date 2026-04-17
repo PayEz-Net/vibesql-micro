@@ -29,6 +29,13 @@ func Open(path string) (*DB, error) {
 
 // OpenWithProgress is like Open but shows progress via the callback.
 func OpenWithProgress(path string, progress func(string)) (*DB, error) {
+	return OpenOnPort(path, 0, progress)
+}
+
+// OpenOnPort is like OpenWithProgress but binds the embedded postgres to a
+// specific TCP port on 127.0.0.1 instead of choosing a free one. Use port=0
+// for automatic port selection.
+func OpenOnPort(path string, port int, progress func(string)) (*DB, error) {
 	// Default path
 	if path == "" {
 		path = "./default.vsql"
@@ -90,8 +97,8 @@ func OpenWithProgress(path string, progress func(string)) (*DB, error) {
 		}
 	}
 	
-	// Start postgres (finds free port automatically, creates dataDir via initdb if new)
-	pg, err := postgres.Start(postgresBin, initdbBin, shareDir, dataDir)
+	// Start postgres on the requested port (0 = find free, creates dataDir via initdb if new)
+	pg, err := postgres.StartOnPort(postgresBin, initdbBin, shareDir, dataDir, port)
 	if err != nil {
 		return nil, fmt.Errorf("start postgres: %w", err)
 	}

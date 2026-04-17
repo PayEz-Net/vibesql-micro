@@ -35,12 +35,20 @@ func findFreePort() (int, error) {
 	return addr.Port, nil
 }
 
-// Start initializes and starts postgres
+// Start initializes and starts postgres on a dynamically chosen free port.
 func Start(postgresBin, initdbBin, shareDir, dataDir string) (*Process, error) {
-	// Find a free port
-	port, err := findFreePort()
-	if err != nil {
-		return nil, fmt.Errorf("find free port: %w", err)
+	return StartOnPort(postgresBin, initdbBin, shareDir, dataDir, 0)
+}
+
+// StartOnPort initializes and starts postgres on a specific port.
+// Pass port=0 to let the OS pick a free port.
+func StartOnPort(postgresBin, initdbBin, shareDir, dataDir string, port int) (*Process, error) {
+	if port == 0 {
+		p, err := findFreePort()
+		if err != nil {
+			return nil, fmt.Errorf("find free port: %w", err)
+		}
+		port = p
 	}
 	
 	// Check if already initialized

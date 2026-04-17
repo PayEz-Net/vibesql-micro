@@ -2,14 +2,19 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"os"
+	"os/signal"
 	"path/filepath"
-	
+	"strconv"
+	"strings"
+	"syscall"
+
 	"github.com/vibesql/vibesql-micro/pkg/vsql"
 )
 
-var version = "0.2.1"
+var version = "0.3.0"
 
 func main() {
 	if len(os.Args) < 2 {
@@ -22,14 +27,17 @@ func main() {
 	switch command {
 	case "version", "-v", "--version":
 		printVersion()
-		
+
 	case "help", "-h", "--help":
 		printUsage()
-		
+
+	case "serve":
+		runServe(os.Args[2:])
+
 	default:
 		// Assume first arg is database path
 		dbPath := command
-		
+
 		if len(os.Args) > 2 {
 			// Single query mode
 			sql := os.Args[2]
@@ -39,6 +47,76 @@ func main() {
 			runShell(dbPath)
 		}
 	}
+}
+
+func runServe(args []string) {
+	fs := flag.NewFlagSet("serve", flag.ExitOnError)
+	listen := fs.String("listen", "127.0.0.1:5433", "address to bind postgres on (host:port or :port)")
+	data := fs.String("data", "./vault.vsql", "path to the .vsql database file")
+	fs.Usage = func() {
+		fmt.Fprintln(os.Stderr, "vsql-micro serve — run a long-lived embedded postgres on a pinned port")
+		fmt.Fprintln(os.Stderr)
+		fmt.Fprintln(os.Stderr, "Usage:")
+		fmt.Fprintln(os.Stderr, "  vsql-micro serve [--listen 127.0.0.1:5433] [--data ./vault.vsql]")
+		fmt.Fprintln(os.Stderr)
+		fmt.Fprintln(os.Stderr, "Authentication: trust (pod-internal use only).")
+		fmt.Fprintln(os.Stderr, "Graceful shutdown on SIGINT or SIGTERM.")
+	}
+	_ = fs.Parse(args)
+
+	host, portStr, err := splitHostPort(*listen)
+	if err != nil {
+		fatal("serve", err)
+	}
+	if host != "" && host != "127.0.0.1" && host != "localhost" {
+		fmt.Fprintf(os.Stderr, "warning: vsql-micro binds 127.0.0.1 only; ignoring host %q from --listen\n", host)
+	}
+	port, err := strconv.Atoi(portStr)
+	if err != nil {
+		fatal("serve: parse port", err)
+	}
+
+	progress := func(msg string) {
+		if msg == "done" {
+			fmt.Fprintln(os.Stderr, " done")
+		} else {
+			fmt.Fprintf(os.Stderr, "%s... ", msg)
+		}
+	}
+
+	db, err := vsql.OpenOnPort(*data, port, progress)
+	if err != nil {
+		fatal("serve: open", err)
+	}
+
+	absData, _ := filepath.Abs(*data)
+	fmt.Fprintf(os.Stderr, "\nvsql-micro serving %s on 127.0.0.1:%d (user=postgres, trust auth)\n", absData, port)
+	fmt.Fprintln(os.Stderr, "Ctrl+C or SIGTERM to shut down.")
+
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM)
+	sig := <-sigs
+	fmt.Fprintf(os.Stderr, "\nreceived %s, shutting down...\n", sig)
+
+	if err := db.Close(); err != nil {
+		fmt.Fprintln(os.Stderr, "close:", err)
+	}
+}
+
+func splitHostPort(addr string) (string, string, error) {
+	if strings.HasPrefix(addr, ":") {
+		return "", addr[1:], nil
+	}
+	idx := strings.LastIndex(addr, ":")
+	if idx < 0 {
+		return "", "", fmt.Errorf("invalid listen addr %q (want host:port or :port)", addr)
+	}
+	return addr[:idx], addr[idx+1:], nil
+}
+
+func fatal(ctx string, err error) {
+	fmt.Fprintf(os.Stderr, "%s: %v\n", ctx, err)
+	os.Exit(1)
 }
 
 func printVersion() {
@@ -52,6 +130,7 @@ func printUsage() {
 	fmt.Println("Usage:")
 	fmt.Println("  vsql-micro <file.vsql>           # Open interactive shell")
 	fmt.Println("  vsql-micro <file.vsql> <query>   # Run single query")
+	fmt.Println("  vsql-micro serve [flags]         # Run as a long-lived server on a pinned port")
 	fmt.Println("  vsql-micro version               # Show version")
 	fmt.Println()
 	fmt.Println("Examples:")

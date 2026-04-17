@@ -2,6 +2,17 @@
 
 All notable changes to vibesql-micro will be documented in this file.
 
+## [0.3.0] - 2026-04-17
+
+### Added
+- `vsql-micro serve --listen 127.0.0.1:5433 --data ./vault.vsql` — long-lived server mode on a pinned TCP port (postgres user, trust auth, pod-internal use). Graceful shutdown on SIGINT/SIGTERM.
+- `pkg/vsql.OpenOnPort(path, port, progress)` — library API for embedding postgres on a specific port.
+- `internal/postgres.StartOnPort(..., port)` — port=0 preserves the previous auto-select behaviour.
+
+### Verified
+- `serve` mode on 10.0.0.93 handles the vsql-vault migration set (001/002/003) end-to-end: `CREATE DATABASE vault` + schema + retention-policy seed produces a 46MB `vault.vsql.data` artifact ready to ship as a pre-seeded distro payload.
+- `Start`/`OpenWithProgress` behaviour unchanged — existing callers unaffected.
+
 ## [0.2.1] - 2026-04-17
 
 ### Verified
