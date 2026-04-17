@@ -2,6 +2,18 @@
 
 All notable changes to vibesql-micro will be documented in this file.
 
+## [0.2.1] - 2026-04-17
+
+### Verified
+- Fresh Linux build (x86_64) at commit 589924b passes the full 18-test CLI suite on Ubuntu (10.0.0.93).
+- Schema-level compatibility with `vsql-vault` verified end-to-end: applied the vsql_vault schema dumped from a PostgreSQL 17 source, seeded retention policies (card / ach / stripe-pm / byok), inserted a byok vault entry with bytea ciphertext + JSONB tags, and executed a retention-policy JOIN — all via `pkg/vsql` library calls.
+
+### Fixed
+- `version` constant in `cmd/vsql-micro/main.go` now reflects the released version instead of `0.1.0`.
+
+### Notes
+- No runtime code changes since v0.2.0. This release publishes a fresh Linux binary with verified provenance.
+
 ## [0.2.0] - 2026-04-03
 
 ### Added
