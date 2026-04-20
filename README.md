@@ -25,6 +25,12 @@ The result is a **~25 MB Linux binary** and **~67 MB Windows binary** that passe
 ### Install
 
 ```bash
+# npm / npx — thin wrapper that downloads the native binary from GitHub Releases
+npx vibesql-micro version
+# or install as a project dep
+npm install vibesql-micro
+
+# or install directly with Go
 go install github.com/vibesql/vibesql-micro/cmd/vsql-micro@latest
 ```
 

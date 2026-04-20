@@ -7,3 +7,16 @@ vsql-micro
 vsql-micro-linux
 vsql-micro.exe
 vsql-micro-windows.exe
+
+# npm
+node_modules/
+npm-debug.log*
+.npm/
+# Native binary downloaded by install.js on postinstall — not committed.
+# The JS shim at bin/vibesql-micro IS committed; only the platform-specific
+# binaries that install.js fetches are ignored.
+/bin/vibesql-micro-linux-x64
+/bin/vibesql-micro-linux-x64.exe
+/bin/vibesql-micro-darwin-x64
+/bin/vibesql-micro-darwin-arm64
+/bin/vibesql-micro-win32-x64.exe

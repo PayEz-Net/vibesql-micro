@@ -1,0 +1,40 @@
+#!/usr/bin/env node
+'use strict';
+
+const { spawnSync } = require('child_process');
+const { existsSync } = require('fs');
+const { join } = require('path');
+
+// Map node's platform/arch to the release-asset suffix.
+function platformTag(platform, arch) {
+  if (platform === 'linux'  && arch === 'x64')   return 'linux-x64';
+  if (platform === 'darwin' && arch === 'x64')   return 'darwin-x64';
+  if (platform === 'darwin' && arch === 'arm64') return 'darwin-arm64';
+  if (platform === 'win32'  && arch === 'x64')   return 'win32-x64';
+  return null;
+}
+
+const { platform, arch } = process;
+const tag = platformTag(platform, arch);
+if (!tag) {
+  console.error(`vibesql-micro: unsupported platform/arch (${platform}/${arch}). Linux x64 is the currently published target; Windows/macOS builds are in progress.`);
+  console.error(`See https://github.com/PayEz-Net/vibesql-micro/releases for current artifacts.`);
+  process.exit(1);
+}
+
+const ext = platform === 'win32' ? '.exe' : '';
+const binPath = join(__dirname, `vibesql-micro-${tag}${ext}`);
+
+if (!existsSync(binPath)) {
+  console.error(`vibesql-micro: native binary missing at ${binPath}`);
+  console.error(`This usually means the postinstall step was skipped (e.g. --ignore-scripts) or failed. Re-run:`);
+  console.error(`  npm rebuild vibesql-micro --foreground-scripts`);
+  process.exit(1);
+}
+
+const result = spawnSync(binPath, process.argv.slice(2), { stdio: 'inherit' });
+if (result.error) {
+  console.error(`vibesql-micro: failed to spawn ${binPath}: ${result.error.message}`);
+  process.exit(1);
+}
+process.exit(result.status ?? 1);
