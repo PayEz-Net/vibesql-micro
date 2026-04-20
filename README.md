@@ -18,7 +18,7 @@ We looked at how projects like **PGlite** handle single-binary distribution, the
 - **Simplified lifecycle** — dynamic port allocation, lock-file guarding, and graceful shutdown remove the need for manual config.
 - **Truly zero-config** — `vsql.Open("app.vsql")` is all you need.
 
-The result is a **~25 MB Linux binary** and **~67 MB Windows binary** that passes **61 automated tests** across both platforms, with startup times under a second on warm open.
+The result is a **~22 MB Linux binary** and **~67 MB Windows binary** that passes an automated test suite across both platforms, with startup times under a second on warm open.
 
 ## Quick Start
 
@@ -51,6 +51,23 @@ app.vsql> \q
 $ vsql-micro ./app.vsql "SELECT * FROM users"
 [{"id": 1, "data": {"name": "Alice"}}]
 ```
+
+### Server mode (long-lived, pinned port)
+
+For service-style deployments — e.g. hosting the embedded PostgreSQL as a backend for another process on the same box — run `vsql-micro serve`:
+
+```bash
+$ vsql-micro serve --listen 127.0.0.1:5433 --data ./vault.vsql
+Creating database... done
+vsql-micro serving /abs/path/vault.vsql on 127.0.0.1:5433 (user=postgres, trust auth)
+Ctrl+C or SIGTERM to shut down.
+```
+
+- Binds a fixed TCP port on 127.0.0.1 (pod-internal — file-system ACLs are the boundary)
+- `user=postgres` with trust auth
+- Graceful shutdown on SIGINT / SIGTERM — signals the embedded PostgreSQL cleanly before exiting
+
+This is the mode used by [vsql-vault](https://github.com/PayEz-Net/vibesql-vault) as its storage backend.
 
 ### Go API
 
